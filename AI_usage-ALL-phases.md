@@ -1,4 +1,4 @@
-# AI usage - phases 1 and 2
+# AI usage - all phases
 
 ## Phase 1
 
@@ -35,3 +35,22 @@ Am integrat logica de sigaction scrisa de mine in monitor_reports. A trebuit sa 
 
 ### Ce am invatat din asta
 Am vazut in practica de ce e mai ok sa folosim sigaction in loc de banalul signal si cum 2 procese diferite ajung sa comunice prin semnale doar pe baza unui fisier ascuns cu un pid pe disc. Am inteles si cum dai trigger la procese externe din c.
+
+---
+
+## Phase 3
+
+### Functiile cerute
+Am intrebat AI-ul ca sa ma ajute sa inteleg de ce imi ramaneau procesele blocate (zombie) si de ce imi crapa dup2() cand incercam sa leg outputu de la scorer la hub-ul principal.
+
+### Ce i-am scris
+I-am dat snippet-ul meu de cod cu pipe-urile din city_hub unde faceam fork si execl la scorer si l-am intrebat de ce textul nu ajunge pe ecran in hub si de ce se blocheaza terminalu de tot.
+
+### Ce a generat AI-ul
+AI-ul mi-a explicat ca pipe-urile se blocheaza infinit daca nu inchizi capetele nefolosite (gen capatu de citire in copil si capatu de scriere in parinte dupa ce trimiti). Mi-a sugerat si sa pun signal(SIGCHLD, SIG_IGN) la inceput in main ca sa nu mai generez procese zombie cand se termina alea mici.
+
+### Ce am modificat eu si de ce
+Am bagat inchiderile de pipe (close pe pipefd) exact inainte de waitpid in logica mea si a luat-o. Am ignorat niste chestii extra pe care mi le dadea el ca solutii pt un shell mai avansat pt ca depasea ce ne trebuie la proiect
+
+### Ce am invatat din asta
+A fost super util sa prind logica din spatele la dup2. Practic am pacalit procesu copil sa creada ca pipe-u este ecranul lui (stdout) normal si asa am reusit sa preiau textul lui direct in variabila din parinte fara sa folosesc fisiere txt de legatura

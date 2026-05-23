@@ -7,15 +7,30 @@
 
 void handle_sigint(int sig) {
     unlink(".monitor_pid");
-    printf("\nmonitor oprit\n");
+    printf("STOP: Monitor oprit\n");
+    fflush(stdout);
     exit(0);
 }
 
 void handle_sigusr1(int sig) {
-    printf("Notificare: un nou raport a fost adaugat\n");
+    printf("EVENT: Un nou raport a fost adaugat!\n");
+    fflush(stdout);
 }
 
 int main() {
+    int pid_fd = open(".monitor_pid", O_RDONLY);
+    if (pid_fd != -1) {
+        char pid_buf[32] = {0};
+        read(pid_fd, pid_buf, sizeof(pid_buf) - 1);
+        close(pid_fd);
+        int existing_pid = atoi(pid_buf);
+        if (existing_pid > 0 && kill(existing_pid, 0) == 0) {
+            printf("ERROR: Monitor deja ruleaza cu PID %d\n", existing_pid);
+            fflush(stdout);
+            return 1;
+        }
+    }
+
     struct sigaction sa_int;
     sa_int.sa_handler = handle_sigint;
     sigemptyset(&sa_int.sa_mask);
@@ -35,6 +50,9 @@ int main() {
         write(fd, pid_str, len);
         close(fd);
     }
+
+    printf("START: Monitor pornit cu PID %d\n", getpid());
+    fflush(stdout);
 
     while (1) {
         pause();
